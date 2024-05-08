@@ -3,7 +3,6 @@
 echo "Environment: $ENV"
 
 # Start the API in the background
-# TODO no need to run --reload in production
 if [ "$ENV" == "local" ]; then
     uvicorn main:app --host 0.0.0.0 --port 8000 --reload &
 else

@@ -1,0 +1,34 @@
+# syntax=docker/dockerfile:1
+FROM python:3.12-alpine as python-base
+
+ENV VENV_PATH="/.venv" \
+    POETRY_VERSION=1.8.2 \
+    POETRY_VIRTUALENVS_IN_PROJECT=true \
+    POETRY_VIRTUALENVS_OPTIONS_NO_PIP=true \
+    POETRY_VIRTUALENVS_OPTIONS_NO_SETUPTOOLS=true \
+    PYSETUP_PATH="/opt/pysetup" \
+    VENV_PATH="/opt/pysetup/.venv"
+
+ENV PATH="$VENV_PATH/bin:$PATH"
+
+# Grab security updates
+WORKDIR $PYSETUP_PATH
+COPY ./scripts/docker-base-alpine.sh docker-base-alpine.sh
+RUN ./docker-base-alpine.sh
+
+FROM python-base as poetry-base
+# Install Poetry
+WORKDIR $PYSETUP_PATH
+RUN apk add --no-cache poetry
+
+# Install project dependencies
+COPY /poetry.lock /pyproject.toml ./
+RUN poetry install --only main --no-root --no-directory -n
+
+FROM python-base as example-api
+COPY --from=poetry-base $VENV_PATH $VENV_PATH
+
+WORKDIR /api
+COPY ./scripts /scripts
+COPY ./api .
+ENTRYPOINT ["/scripts/entrypoint.sh"]

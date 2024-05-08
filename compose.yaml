@@ -2,9 +2,11 @@ services:
   api:
     environment:
       - ENV=local
+    container_name: ddl_dockerfile_0
+    image: ddl_dockerfile_0
     build:
       context: .
-      dockerfile: ./Dockerfile_4
+      dockerfile: ./Dockerfile_0
     volumes:
       - ./api:/api
     ports:

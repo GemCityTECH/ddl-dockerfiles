@@ -29,23 +29,17 @@ WORKDIR $PYSETUP_PATH
 # hadolint ignore=DL3018
 RUN apk add --no-cache poetry
 
+# Install project dependencies
 COPY /poetry.lock /pyproject.toml ./
 RUN --mount=type=cache,target=/root/.cache \
     poetry install --only main --no-root --no-directory -n
 
-
-# Runtime
 FROM python-base as tns-api
 LABEL maintainer="You <your@email.com>"
-
 COPY --from=poetry-base $PYSETUP_PATH $PYSETUP_PATH
 
 WORKDIR /api
-
-# TODO evaluate using non-root user
 COPY ./api .
 COPY ./scripts /scripts
-RUN chmod -R +x /scripts
 
-# 27JUN22 updated from https://pythonspeed.com/articles/gunicorn-in-docker/
 ENTRYPOINT ["/scripts/entrypoint.sh"]
