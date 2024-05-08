@@ -1,0 +1,24 @@
+# syntax=docker/dockerfile:1
+FROM python:3.12-alpine as python-base
+
+ENV VENV_PATH="/.venv" \
+    POETRY_VERSION=1.8.2 \
+    POETRY_VIRTUALENVS_IN_PROJECT=true \
+    POETRY_VIRTUALENVS_OPTIONS_NO_PIP=true \
+    POETRY_VIRTUALENVS_OPTIONS_NO_SETUPTOOLS=true
+
+ENV PATH="$VENV_PATH/bin:$PATH"
+
+FROM python-base as poetry-base
+
+RUN apk add --no-cache poetry
+
+COPY /poetry.lock /pyproject.toml ./
+RUN poetry install --only main --no-root --no-directory -n
+
+FROM python-base as example-api
+COPY --from=poetry-base $VENV_PATH $VENV_PATH
+
+WORKDIR /api
+COPY ./api .
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

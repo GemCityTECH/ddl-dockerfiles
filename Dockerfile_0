@@ -1,0 +1,15 @@
+# syntax=docker/dockerfile:1
+FROM python:3.12 as python-base
+
+ENV POETRY_VIRTUALENVS_IN_PROJECT=true \
+    POETRY_HOME="/opt/poetry" \
+    VENV_PATH="/.venv"
+
+ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
+
+COPY . .
+RUN curl -sSL https://install.python-poetry.org | python3 -
+RUN poetry install
+
+WORKDIR /api
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

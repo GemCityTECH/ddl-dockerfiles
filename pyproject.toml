@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "ddl-dockerfiles"
+version = "0.1.0"
+description = ""
+authors = ["Me <example@email.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+uvicorn = "^0.29.0"
+fastapi = "^0.111.0"
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.4.3"
+bandit = "^1.7.8"
+hadolintw = "^1.2.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
