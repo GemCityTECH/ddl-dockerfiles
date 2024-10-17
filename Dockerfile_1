@@ -1,5 +1,7 @@
 # syntax=docker/dockerfile:1
-FROM python:3.12-alpine as python-base
+# Build with docker build -f Dockerfile_1 -t version_1 . --no-cache
+# Run with docker run -p 8000:8000 version_1
+FROM python:3.12-alpine AS my-app
 
 ENV POETRY_VIRTUALENVS_IN_PROJECT=true \
     VENV_PATH="/.venv"

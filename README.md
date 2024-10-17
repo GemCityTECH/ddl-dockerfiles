@@ -1,6 +1,6 @@
 # DDL Dockerfiles
 
-This repository is for support of a talk at the Dayton Dynamic Languages group about writing Dockerfiles to optimize for speed and size.
+This repository is for support of a talk at Momentum DevCon 2024 about writing Dockerfiles to optimize for velocity.
 
 ## Prerequisites
 

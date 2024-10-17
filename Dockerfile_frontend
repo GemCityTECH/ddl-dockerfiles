@@ -1,0 +1,51 @@
+# See https://pnpm.io/docker
+FROM node:20.3-alpine AS node_base
+
+RUN corepack enable
+
+FROM node_base AS build
+
+# Copy dependency specification & run pnpm install
+WORKDIR /app
+COPY package.json /app/
+COPY pnpm-lock.yaml /app/
+
+# TODO use https://github.com/reproducible-containers/buildkit-cache-dance
+# This cache works locally, but not on our GH runners
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --ignore-scripts
+
+# Copy source code
+COPY tsconfig.json /app/
+COPY tsconfig.node.json /app/
+COPY vite.config.ts /app/
+COPY .env.* /app/
+COPY public /app/public
+COPY index.html /app/
+COPY src /app/src
+
+# Build-time Vite env vars
+ARG VITE_ENV
+ARG VITE_BASE_API_URL
+ARG VITE_VERSION
+ARG VITE_CLERK_PUBLISHABLE_KEY
+
+ENV VITE_ENV=${VITE_ENV}
+ENV VITE_BASE_API_URL=${VITE_BASE_API_URL}
+ENV VITE_VERSION=${VITE_VERSION}
+ENV VITE_CLERK_PUBLISHABLE_KEY=${VITE_CLERK_PUBLISHABLE_KEY}
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+# Build & compile app bundle
+RUN pnpm build
+
+# New near-scratch image with nginx
+FROM nginx:stable-alpine-slim AS frontend_application
+
+COPY ./.nginx/nginx.conf /etc/nginx/nginx.conf
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copy bundle from build image
+COPY --from=build /app/dist/ /usr/share/nginx/html
+
+EXPOSE 80
